@@ -1,0 +1,30 @@
+.header {
+    margin: 15px;
+    display: flex;
+    a {
+        text-decoration: none;
+    }
+    .header_title {
+        a {
+            color: #000000;
+        }
+    }
+    .header_menu {
+        margin: 0 0 0 auto;
+        .menu_link {
+            padding: 10px;
+        }
+        a:link {
+            color: #000000; transition: 1s;
+        }
+        a:visited {
+            color: #000000
+         }
+        a:hover {
+            color:rgb(255, 255, 255); background-color: #000000;
+        }
+        a:active {
+            color:rgb(255, 255, 255); background-color:transition;
+        }
+    }
+}
