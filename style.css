@@ -1,10 +1,11 @@
 body {
+    width: 100%;
+    margin: 0;
     font-family: sans-serif;
     font-size: 14px;
     background-color: white;
     color: #555555;
 }
-
 .header {
     position: fixed;
     z-index: 10;
@@ -41,18 +42,35 @@ a.menu_link {
 a.menu_link:hover {
     background-size: 90% 1px;
 }
-
 .contents {
-    width: 100%;
-    padding-top: 150px;
-    margin-left: 7%;
+    margin: 150px 7% 0 7%;
 }
-
+.baner {
+    margin: 65px 50px 50px 50px;
+    text-align: center;
+}
 .footer {
     width: 100%;
 }
-
+.detail {
+    margin-left: 7%;
+    padding-top: 10px;
+}
 .copyright {
     text-align: right;
     margin-right: 7%;
+}
+
+/* particle.js */
+#particles-js{
+    z-index: -1;
+    position: absolute;
+    width:100%;
+    height: 100%;
+    background-color: #ffffff;
+}
+canvas { 
+    position: absolute;
+    top: 0;
+    left: 0;
 }
