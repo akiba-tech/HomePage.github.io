@@ -1,0 +1,76 @@
+body {
+    width: 100%;
+    margin: 0;
+    font-family: sans-serif;
+    font-size: 14px;
+    background-color: white;
+    color: #555555;
+}
+.header {
+    position: fixed;
+    z-index: 10;
+    width: 100%;
+    height: 150px;
+    top: 0;
+    left: 0;
+    background-color: white;
+    a {
+        color: #555555;
+        text-decoration: none;
+    }
+}
+.header_title {
+    float: left;
+    padding: 50px 0px 0px 7%;
+}
+.header_menu {
+    display: flex;
+    justify-content: flex-end;
+    padding: 50px 7% 0px 0px;
+}
+.menu_link {
+    padding: 20px;
+    float: none;
+}
+a.menu_link {
+  background-image: linear-gradient(90deg, #8b8b8b, #8b8b8b);
+  background-size: 0 2px;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  transition: all 0.3s;
+}
+a.menu_link:hover {
+    background-size: 90% 1px;
+}
+.contents {
+    margin: 150px 7% 0 7%;
+}
+.baner {
+    margin: 65px 50px 50px 50px;
+    text-align: center;
+}
+.footer {
+    width: 100%;
+}
+.detail {
+    margin-left: 7%;
+    padding-top: 10px;
+}
+.copyright {
+    text-align: right;
+    margin-right: 7%;
+}
+
+/* particle.js */
+#particles-js{
+    z-index: -1;
+    position: absolute;
+    width:100%;
+    height: 100%;
+    background-color: #ffffff;
+}
+canvas { 
+    position: absolute;
+    top: 0;
+    left: 0;
+}
