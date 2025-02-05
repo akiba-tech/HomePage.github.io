@@ -1,8 +1,9 @@
+/*common*/
 body {
     width: 100%;
     margin: 0;
     font-family: sans-serif;
-    font-size: 14px;
+    font-size: 15px;
     background-color: white;
     color: #555555;
 }
@@ -10,10 +11,10 @@ header {
     position: fixed;
     z-index: 10;
     width: 100%;
-    height: 150px;
+    height: 115px;
     top: 0;
     left: 0;
-    background-color: white;
+    background-color: rgb(255, 255, 255);
     a {
         color: #555555;
         text-decoration: none;
@@ -21,12 +22,12 @@ header {
 }
 .header_title {
     float: left;
-    padding: 50px 0px 0px 7%;
+    padding: 25px 0px 0px 15%;
 }
 .header_menu {
     display: flex;
     justify-content: flex-end;
-    padding: 50px 7% 0px 0px;
+    padding: 31px 15% 0px 0px;
 }
 .menu_link {
     padding: 20px;
@@ -43,7 +44,10 @@ a.menu_link:hover {
     background-size: 90% 1px;
 }
 .contents {
-    margin: 150px 7% 0 7%;
+    margin: 180px 15% 0 15%;
+}
+.contents_title {
+    text-align: center;
 }
 #partner_baner {
     margin: 65px 50px 50px 50px;
@@ -53,12 +57,37 @@ footer {
     width: 100%;
 }
 .detail {
-    margin-left: 7%;
+    margin-left: 15%;
     padding-top: 10px;
 }
 .copyright {
     text-align: right;
-    margin-right: 7%;
+    margin-right: 15%;
+}
+
+/*news*/
+.news_content {
+    justify-content: center;
+    display: flex;
+    margin: 0 10% 10px 10%;
+    background: rgb(255, 255, 255);
+    border-radius: 10px;
+    border: 1px solid #33333336;
+}
+.news_date {
+    text-align: center;
+    width: 135px;
+    margin: 0 20px 0 20px;
+}
+.news_border_line {
+    width: 2px;
+    border-left: 1px solid #33333336;
+    margin: 10px 10px 10px 30px;
+}
+.news_detail {
+    text-align: left;
+    margin-left: 10%;
+    width: 70%;
 }
 
 /* particle.js */
