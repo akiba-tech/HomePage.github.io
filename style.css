@@ -62,30 +62,9 @@ footer {
     margin-right: var(--LR_SAFE);
 }
 
-/*news*/
-.news_content {
-    justify-content: center;
-    display: flex;
-    margin: 0 10% 10px 10%;
-    background: rgb(255, 255, 255);
-    border-radius: 10px;
-    border: 1px solid #33333336;
+.company_profile {
+    background-color: rgba(255, 255, 255, 0.6);
 }
-.news_date {
-    text-align: center;
-    width: 135px;
-    margin: auto 20px auto 20px;
-}
-.news_border_line {
-    width: 2px;
-    border-left: 1px solid #33333336;
-    margin: 10px 10px 10px 30px;
-}
-.news_detail {
-    text-align: left;
-    margin-left: 10%;
-    width: 70%;
-}    
 
 /* レスポンシブ対応 [モバイル] */
 @media screen and (max-width: 959px) {
@@ -166,6 +145,37 @@ footer {
         background-color: rgb(219, 219, 219);
         color: #666666;
     }
+    .news_content {
+        display: flex;
+        flex-flow: column;
+        border-radius: 10px;
+        border: solid 0.5px #33333333;
+        background-color: rgba(255, 255, 255, 0.6);
+        margin-bottom: 15px;
+    }
+    .news_date {
+        background-color: #d4d4d4;
+        margin: 0;
+        border-top-left-radius: 9.5px;
+        border-top-right-radius: 9.5px;
+        padding: 5px 15px 5px 15px;
+    }
+    .news_detail {
+        padding: 5px 15px 5px 25px;
+    }
+    .profile_data {
+        display: flex;
+        flex-flow: column;
+        border: solid 0.5px #33333333;
+    }
+    .profile_data .title {
+        background-color: #d4d4d4;
+        margin: 0;
+        padding: 5px 15px 5px 15px;
+    }
+    .profile_data .profile_detail {
+        padding: 5px 15px 5px 25px;
+    }
 }
 
 /* レスポンシブ対応 [PC] */
@@ -198,18 +208,67 @@ footer {
     a.menu_link:hover {
         background-size: 90% 1px;
     }
+    .news_content {
+        margin: auto;
+        width: 600px;
+        border-top: solid 1px #afafaf8b;
+        border-left: solid 1px #afafaf8b;
+        border-right: solid 1px #afafaf8b;
+        border-bottom: none;
+        display: flex;
+        background-color: rgba(255, 255, 255, 0.6);
+    }
+    .news_content:last-child {
+        border-top: none;
+        border: solid 1px #afafaf8b;
+    }
+    .news_date {
+        text-align: center;
+        margin: auto;
+        flex: 1;
+    }
+    .news_detail {
+        padding: 5px 15px 5px 25px;
+        border-left: solid 1px #afafaf8b;
+        flex: 3;
+    }
+    .company_profile {
+        margin: auto;
+        width: 600px;
+    }
+    .profile_data {
+        display: flex;
+        border-top: solid 1px #afafaf8b;
+        border-left: solid 1px #afafaf8b;
+        border-right: solid 1px #afafaf8b;
+        border-bottom: none;
+    }
+    .profile_data:last-child {
+        display: flex;
+        border: solid 1px #afafaf8b;
+    }
+    .profile_data .title {
+        text-align: center;
+        margin: auto;
+        flex: 1;
+    }
+    .profile_data .profile_detail {
+        padding: 5px 15px 5px 25px;
+        border-left: solid 1px #afafaf8b;
+        flex: 6;
+    }
 }
 
 /* モバイル・PC共通 particle.js用 */
 #particles-js {
     z-index: -1;
-    position: absolute;
+    position: fixed;
     width:100%;
     height: 100%;
     background-color: #ffffff;
 }
 canvas { 
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
 }
