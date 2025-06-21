@@ -66,6 +66,15 @@ footer {
     background-color: rgba(255, 255, 255, 0.6);
 }
 
+a {
+    color: #333333;
+}
+
+.partner_logo_array a {
+    margin: 10px;
+    text-decoration: none;
+}
+
 /* レスポンシブ対応 [モバイル] */
 @media screen and (max-width: 959px) {
     /* PC向けメニューを非表示 */
