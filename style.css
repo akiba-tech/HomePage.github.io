@@ -1,5 +1,6 @@
 /* 変数 */
 :root {
+    --TOP_SAFE: 180px;
     --LR_SAFE: 15%;
     --Z_INDEX_HEADER: 10;
     --Z_INDEX_HUMBERGER_MENU: 11;
@@ -36,7 +37,7 @@ header {
 }
 
 .contents {
-    margin: 180px var(--LR_SAFE) 0 var(--LR_SAFE);
+    margin: var(--TOP_SAFE) var(--LR_SAFE) 0 var(--LR_SAFE);
 }
 
 .contents_title {
@@ -73,6 +74,11 @@ a {
 .partner_logo_array a {
     margin: 10px;
     text-decoration: none;
+}
+
+.contact-form {
+    margin-top: var(--TOP_SAFE);
+    text-align: center;
 }
 
 /* レスポンシブ対応 [モバイル] */
