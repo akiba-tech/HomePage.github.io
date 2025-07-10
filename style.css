@@ -1,6 +1,8 @@
 /* 変数 */
 :root {
+    --TOP_SAFE: 180px;
     --LR_SAFE: 15%;
+    --LR_SAFE_MOBILE: 10%;
     --Z_INDEX_HEADER: 10;
     --Z_INDEX_HUMBERGER_MENU: 11;
     --MOBILE_MAX_WIDTH: 959px;
@@ -35,10 +37,6 @@ header {
     padding: 25px 0px 0px var(--LR_SAFE);
 }
 
-.contents {
-    margin: 180px var(--LR_SAFE) 0 var(--LR_SAFE);
-}
-
 .contents_title {
     text-align: center;
 }
@@ -50,6 +48,7 @@ header {
 
 footer {
     width: 100%;
+    margin-bottom: 75px;
 }
 
 .detail {
@@ -75,11 +74,19 @@ a {
     text-decoration: none;
 }
 
+.contact-form {
+    margin-top: var(--TOP_SAFE);
+    text-align: center;
+}
+
 /* レスポンシブ対応 [モバイル] */
 @media screen and (max-width: 959px) {
     /* PC向けメニューを非表示 */
     .header_menu_pc {
         display: none;
+    }
+    .contents {
+        margin: var(--TOP_SAFE) var(--LR_SAFE_MOBILE) 0 var(--LR_SAFE_MOBILE);
     }
 
     /* モバイル向けメニューCSS */
@@ -92,7 +99,7 @@ a {
         height: 60px;
         width: 60px;
         top: 32px;
-        right: var(--LR_SAFE);
+        right: var(--LR_SAFE_MOBILE);
     }
     .menu_icon span {
         z-index: var(--Z_INDEX_HUMBERGER_MENU);
@@ -185,6 +192,15 @@ a {
     .profile_data .profile_detail {
         padding: 5px 15px 5px 25px;
     }
+    .contact-form iframe {
+        height: 1700px;
+    }
+    /*Slick用*/
+    .carousel {
+      display: block;
+      margin: 0 auto;
+      width: 300px;
+    }
 }
 
 /* レスポンシブ対応 [PC] */
@@ -195,6 +211,9 @@ a {
     }
     .header_menu_mobile_list {
         display: none;
+    }
+    .contents {
+        margin: var(--TOP_SAFE) var(--LR_SAFE_MOBILE) 0 var(--LR_SAFE_MOBILE);
     }
 
     /* PC用メニューCSS */
@@ -266,6 +285,15 @@ a {
         border-left: solid 1px #afafaf8b;
         flex: 6;
     }
+    .contact-form iframe {
+        height: 1450px;
+    }
+    /*Slick用*/
+    .carousel {
+      display: block;
+      margin: 0 auto;
+      width: 500px;
+    }
 }
 
 /* モバイル・PC共通 particle.js用 */
@@ -280,4 +308,10 @@ canvas {
     position: fixed;
     top: 0;
     left: 0;
+}
+
+.carousel img {
+  display: block;
+  margin: 0 auto;
+  width: 100%;
 }

@@ -15,6 +15,8 @@
         <link rel="icon" href="/resources/akiba-tech/akiba_tech_favicon.ico">
         <meta name="description" content="アキバ技研合同会社">
         <link rel="stylesheet" href="/style.css">
+        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css"/>
+        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css"/>
         <!--レスポンシブ用-->
         <meta name="viewport" content="width=device-width,initial-scale=1.0">
         <!--OGP-->
@@ -36,8 +38,12 @@
         <!--ヘッダー(共通読み込み)-->
         <div id="header"></div>
         <div class="contents">
-            <p>アキバ技研は研究開発・販売を行う会社です</p>
-            <p><a href="https://akiba-tech.square.site/">公式ECサイト</a>にて、商品の販売を行っております</p>
+            <h2 style="text-align: center;">\ アキバ技研は研究開発と販売を行う会社です /</h2>
+            <br>
+            <div class="carousel">
+                <div><a href="https://akiba-tech.square.site/"><img src="/resources/EC.jpg"></a></div>
+                <div><img src="/resources/LiteDetail.jpg"></div>
+            </div>
         </div>
         <!--パートナーバナー(共通読み込み)-->
         <div id="partner_baner"></div>
@@ -49,5 +55,19 @@
         <script src="js/particles/particles.min.js"></script>
         <script src="js/particles/particles.settings.js"></script>
         <!--/particle.js-->
+        <!--slick.min.js-->
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
+        <script>
+            $(document).ready(function(){
+                $('.carousel').slick({
+                    autoplay: true,         // 自動再生を有効にする
+                    autoplaySpeed: 7000,    // 自動再生の間隔（ミリ秒）
+                    speed: 1500,            // スライド切り替えのスピード（ミリ秒）
+                    arrows: false,          // 左右の矢印を表示
+                    dots: true              // ドットナビゲーションを表示
+                });
+            });
+        </script>
+        <!--/slick.min.js-->
     </body>
 </html>
