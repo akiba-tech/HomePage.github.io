@@ -283,7 +283,7 @@ a {
     .profile_data .profile_detail {
         padding: 5px 15px 5px 25px;
         border-left: solid 1px #afafaf8b;
-        flex: 6;
+        flex: 4;
     }
     .contact-form iframe {
         height: 1450px;
