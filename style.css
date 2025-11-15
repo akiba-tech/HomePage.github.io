@@ -277,7 +277,7 @@ a {
     }
     .profile_data .title {
         text-align: center;
-        margin: auto;
+        margin: auto 5px auto 5px;
         flex: 1;
     }
     .profile_data .profile_detail {
