@@ -193,7 +193,9 @@ a {
         padding: 5px 15px 5px 25px;
     }
     .contact-form iframe {
-        height: 1700px;
+        width: 90%;
+        height: 70vh;
+        background-color: #f0f0f0;
     }
     /*Slick用*/
     .carousel {
@@ -286,7 +288,9 @@ a {
         flex: 4;
     }
     .contact-form iframe {
-        height: 1450px;
+        width: 60%;
+        height: 70vh;
+        background-color: #f0f0f0;
     }
     /*Slick用*/
     .carousel {
