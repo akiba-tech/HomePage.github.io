@@ -18,6 +18,10 @@ body {
     color: #555555;
 }
 
+body.loading {
+    overflow: hidden;
+}
+
 header {
     position: fixed;
     z-index: var(--Z_INDEX_HEADER);
@@ -77,6 +81,43 @@ a {
 .contact-form {
     margin-top: var(--TOP_SAFE);
     text-align: center;
+}
+
+/* ローディング */
+#loading {
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+    position: fixed;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.5s;
+    background-color: rgb(255, 255, 255);
+}
+.loading_animation {
+    width: 50px;
+    height: 50px;
+    background-color: #999999;
+    border-radius: 100%;
+    animation: sk-scaleout 1s infinite ease-in-out;
+}
+
+#loading.loaded {
+    opacity: 0;
+    visibility: hidden;
+}
+
+@keyframes sk-scaleout {
+    0% {
+      transform: scale(0);
+    }
+    100% {
+      transform: scale(1);
+      opacity: 0;
+    }
 }
 
 /* レスポンシブ対応 [モバイル] */
