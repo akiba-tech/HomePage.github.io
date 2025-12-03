@@ -8,6 +8,27 @@ window.onload = function () {
     },200);
 };
 
+// 遷移アニメーション用
+document.body.addEventListener("click", function (e) {
+  const link = e.target.closest("a[href]");
+  if (!link) return;
+
+  const href = link.href;
+  if (
+    href.startsWith("http") && !href.includes(location.hostname) ||
+    href.includes("#") ||
+    link.target === "_blank"
+  ) return;
+
+  e.preventDefault();
+  const transition = document.getElementById("transition");
+  transition.classList.add("active");
+
+  setTimeout(() => {
+    window.location.href = href;
+  }, 300);
+});
+
 // ヘッダー読み込み
 fetch("common/header.html")
     .then((response) => response.text())
