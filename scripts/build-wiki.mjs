@@ -120,7 +120,24 @@ function renderMarkdown(markdown, article) {
     code = null;
   };
 
-  for (const line of lines) {
+  const tableCells = (line) => line.trim().replace(/^\||\|$/g, '').split('|').map((cell) => cell.trim());
+  const isTableDivider = (line) => /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(line);
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    if (line.includes('|') && isTableDivider(lines[index + 1] || '')) {
+      closeParagraph(); closeList();
+      const headers = tableCells(line).map((cell) => `<th>${inline(cell, article)}</th>`).join('');
+      const rows = [];
+      index += 2;
+      while (index < lines.length && lines[index].trim().includes('|')) {
+        rows.push(`<tr>${tableCells(lines[index]).map((cell) => `<td>${inline(cell, article)}</td>`).join('')}</tr>`);
+        index += 1;
+      }
+      index -= 1;
+      html.push(`<div class="wiki-table-wrap"><table><thead><tr>${headers}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`);
+      continue;
+    }
     if (line.startsWith('```')) {
       if (code) closeCode(); else { closeParagraph(); closeList(); code = []; }
       continue;

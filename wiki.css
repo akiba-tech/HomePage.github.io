@@ -108,6 +108,28 @@
     cursor: zoom-in;
 }
 
+.wiki-table-wrap {
+    overflow-x: auto;
+    margin: 18px 0;
+}
+
+.wiki-document table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.wiki-document th,
+.wiki-document td {
+    border: 1px solid #afafaf8b;
+    padding: 9px 12px;
+    text-align: left;
+    vertical-align: top;
+}
+
+.wiki-document th {
+    background: rgba(212, 212, 212, 0.55);
+}
+
 .wiki-document img.wiki-image-expanded {
     position: fixed;
     z-index: 10000;
