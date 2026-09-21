@@ -1,6 +1,7 @@
 // ロードアニメーション用
 window.onload = function () {
     const loading_anim = document.getElementById("loading");
+    if (!loading_anim) return;
     // 0.2秒待っておく
     setTimeout(() => {
         loading_anim.classList.add("loaded");
@@ -20,8 +21,10 @@ document.body.addEventListener("click", function (e) {
     link.target === "_blank"
   ) return;
 
-  e.preventDefault();
   const transition = document.getElementById("transition");
+  if (!transition) return;
+
+  e.preventDefault();
   transition.classList.add("active");
 
   setTimeout(() => {
@@ -30,16 +33,16 @@ document.body.addEventListener("click", function (e) {
 });
 
 // ヘッダー読み込み
-fetch("common/header.html")
+fetch("/common/header.html")
     .then((response) => response.text())
     .then((data) => document.querySelector("#header").innerHTML = data);
 
 // フッター読み込み
-fetch("common/footer.html")
+fetch("/common/footer.html")
     .then((response) => response.text())
     .then((data) => document.querySelector("#footer").innerHTML = data);
 
 // パートナーバナー読み込み
-fetch("common/partner_baner.html")
+fetch("/common/partner_baner.html")
     .then((response) => response.text())
     .then((data) => document.querySelector("#partner_baner").innerHTML = data);
