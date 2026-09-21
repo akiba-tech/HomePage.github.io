@@ -1,0 +1,8 @@
+{
+  "name": "akiba-tech-homepage",
+  "private": true,
+  "scripts": {
+    "build:wiki": "node scripts/build-wiki.mjs",
+    "preview:wiki": "node scripts/build-wiki.mjs --preview"
+  }
+}
