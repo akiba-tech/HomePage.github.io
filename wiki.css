@@ -293,6 +293,7 @@ body.wiki-page {
 .wiki-page footer {
     position: relative;
     z-index: 6;
+    width: auto;
     margin: 0 0 0 330px;
 }
 
