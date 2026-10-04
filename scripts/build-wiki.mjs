@@ -1,8 +1,10 @@
-import { cp, mkdir, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
+﻿import { cp, mkdir, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 const root = process.cwd();
-const sourceRoot = path.join(root, 'content', 'articles');
+const sourceRoot = process.argv.includes('--preview')
+  ? path.resolve(root, '..', 'product-wiki', 'articles')
+  : path.join(root, 'content', 'articles');
 const outputRoot = path.join(root, 'site');
 const wikiRoot = path.join(outputRoot, 'wiki');
 
@@ -21,7 +23,7 @@ const slugify = (value) => String(value)
 
 function parseArticle(raw, filePath) {
   const frontMatter = {};
-  let markdown = raw.replace(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/, (_, block) => {
+  let markdown = raw.replace(/^\uFEFF/, '').replace(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/, (_, block) => {
     for (const line of block.split(/\r?\n/)) {
       const match = line.match(/^([A-Za-z][\w-]*):\s*(.*)$/);
       if (match) frontMatter[match[1]] = match[2].trim().replace(/^['"]|['"]$/g, '');
@@ -48,6 +50,8 @@ function parseArticle(raw, filePath) {
     title: frontMatter.title || titleFromHeading || fileName,
     description: frontMatter.description || '',
     date: frontMatter.date || '',
+    status: frontMatter.status || 'active',
+    shopUrl: frontMatter.shop_url || '',
     markdown,
   };
 }
@@ -170,6 +174,43 @@ function articleUrl(article) {
   return `/wiki/${article.productSlug}/${article.slug}.html`;
 }
 
+function productCatalog(articles) {
+  const products = new Map();
+  for (const article of articles) {
+    if (!products.has(article.productSlug)) {
+      products.set(article.productSlug, {
+        name: article.productName,
+        url: articleUrl(article),
+        statuses: new Set(),
+        shopUrl: '',
+      });
+    }
+    const product = products.get(article.productSlug);
+    if (article.status) product.statuses.add(article.status);
+    if (article.shopUrl) product.shopUrl = article.shopUrl;
+  }
+  return [...products.values()].map((product) => ({
+    ...product,
+    status: product.statuses.has('discontinued')
+      ? 'discontinued'
+      : product.statuses.has('limited_stock') ? 'limited_stock' : 'active',
+  }));
+}
+
+function renderProductCatalog(products) {
+  if (!products.length) return '';
+  const cards = products.map((product) => {
+    const isDiscontinued = product.status === 'discontinued';
+    const status = isDiscontinued
+      ? '<span class="product-status product-status-discontinued">販売終了</span>'
+      : product.status === 'limited_stock' ? '<span class="product-status product-status-limited">在庫限り</span>' : '';
+    const shopUrl = !isDiscontinued && /^https?:\/\//i.test(product.shopUrl) ? product.shopUrl : '';
+    const shopLink = shopUrl ? `<a href="${escapeHtml(shopUrl)}" target="_blank" rel="noopener noreferrer">販売サイト</a>` : '';
+    return `<li class="product-card${isDiscontinued ? ' is-discontinued' : ''}"><div class="product-card-heading"><a href="${product.url}">${escapeHtml(product.name)}</a>${status}</div><div class="product-card-links"><a href="${product.url}">製品情報</a>${shopLink}</div></li>`;
+  }).join('');
+  return `<section class="product-catalog" aria-labelledby="product-catalog-title"><h2 id="product-catalog-title">製品情報</h2><ul>${cards}</ul></section>`;
+}
+
 function explorer(articles, activeUrl = '') {
   const root = { folders: new Map(), articles: [] };
   for (const article of articles) {
@@ -250,6 +291,16 @@ async function build() {
     if (error.code !== 'ENOENT') throw error;
   }
   const nav = explorer(articles);
+  const catalog = renderProductCatalog(productCatalog(articles));
+  const homePath = path.join(outputRoot, 'index.html');
+  try {
+    const home = await readFile(homePath, 'utf8');
+    const marker = '<!-- PRODUCT_CATALOG -->';
+    if (home.includes(marker)) await writeFile(homePath, home.replace(marker, catalog), 'utf8');
+    else if (catalog) console.warn('Product catalog skipped: index.html is missing the PRODUCT_CATALOG marker.');
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
   await writeFile(path.join(wikiRoot, 'index.html'), page({
     title: 'Wiki', description: 'アキバ技研の製品公式ドキュメント',
     breadcrumbs: [{ label: 'Wiki', href: '/wiki/' }], navigation: nav,
@@ -258,7 +309,11 @@ async function build() {
   for (const article of articles) {
     const target = path.join(outputRoot, articleUrl(article).replace(/^\//, ''));
     await mkdir(path.dirname(target), { recursive: true });
-    const body = `<h1>${escapeHtml(article.title)}</h1>${article.date ? `<p class="wiki-updated">更新日: ${escapeHtml(article.date)}</p>` : ''}${renderMarkdown(article.markdown, article)}`;
+    const articleShopUrl = /^https?:\/\//i.test(article.shopUrl) ? article.shopUrl : '';
+    const productNotice = article.status === 'discontinued'
+      ? '<p class="wiki-product-notice is-discontinued">販売終了</p>'
+      : articleShopUrl ? `<p class="wiki-product-notice"><a href="${escapeHtml(articleShopUrl)}" target="_blank" rel="noopener noreferrer">販売ページはこちら</a></p>` : '';
+    const body = `<h1>${escapeHtml(article.title)}</h1>${productNotice}${article.date ? `<p class="wiki-updated">更新日: ${escapeHtml(article.date)}</p>` : ''}${renderMarkdown(article.markdown, article)}`;
     await writeFile(target, page({
       title: article.title, description: article.description,
       breadcrumbs: [{ label: 'Wiki', href: '/wiki/' }, { label: article.productName, href: '/wiki/' }, { label: article.title, href: articleUrl(article) }],
@@ -274,3 +329,4 @@ async function build() {
 }
 
 build().catch((error) => { console.error(error); process.exitCode = 1; });
+
