@@ -167,6 +167,32 @@
     font-size: 13px;
 }
 
+.wiki-product-notice {
+    display: inline-block;
+    margin: 10px 0 18px;
+    border-radius: 4px;
+    padding: 7px 11px;
+    background: #555555;
+    color: #ffffff;
+    font-size: 14px;
+}
+
+.wiki-product-notice a {
+    color: #ffffff;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.wiki-product-notice a:hover {
+    color: #eeeeee;
+    text-decoration: none;
+}
+
+.wiki-product-notice.is-discontinued {
+    background: #7f2020;
+    color: #ffffff;
+}
+
 .wiki-empty {
     margin: 0;
 }

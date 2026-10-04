@@ -379,3 +379,69 @@ canvas {
   margin: 0 auto;
   width: 100%;
 }
+
+.product-catalog {
+    max-width: 900px;
+    margin: 48px auto 0;
+}
+
+.product-catalog h2 {
+    text-align: center;
+}
+
+.product-catalog ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.product-card {
+    padding: 16px;
+    border: 1px solid #33333333;
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+.product-card-heading,
+.product-card-links {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.product-card-heading {
+    justify-content: space-between;
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.product-card-links {
+    margin-top: 12px;
+    font-size: 0.9rem;
+}
+
+.product-status {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.product-status-discontinued {
+    color: #fff;
+    background-color: #9b2c2c;
+}
+
+.product-status-limited {
+    color: #3d2b00;
+    background-color: #f2c66d;
+}
+
+.product-card.is-discontinued {
+    border-color: #9b2c2c66;
+}
