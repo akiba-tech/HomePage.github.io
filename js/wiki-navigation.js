@@ -24,6 +24,10 @@
 
       currentDocument.innerHTML = nextDocument.innerHTML;
       document.title = next.title;
+      document.head.querySelectorAll('[data-wiki-metadata]').forEach((element) => element.remove());
+      next.head.querySelectorAll('[data-wiki-metadata]').forEach((element) => {
+        document.head.appendChild(element.cloneNode(true));
+      });
       document.querySelectorAll('.wiki-explorer a[aria-current="page"]').forEach((link) => link.removeAttribute('aria-current'));
       const currentLink = [...document.querySelectorAll('.wiki-explorer a[href]')]
         .find((link) => new URL(link.href).pathname === url.pathname);

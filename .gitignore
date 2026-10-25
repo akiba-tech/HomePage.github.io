@@ -2,3 +2,5 @@ site/
 wiki/
 content/
 node_modules/
+product-wiki/
+.tools/
