@@ -167,8 +167,23 @@
     font-size: 13px;
 }
 
+.wiki-product-identity {
+    margin-bottom: 20px;
+}
+
+.wiki-product-name {
+    margin: 0;
+    color: #333333;
+    font-size: 1.2rem;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
 .wiki-product-notice {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
     margin: 10px 0 18px;
     border-radius: 4px;
     padding: 7px 11px;
@@ -195,6 +210,15 @@
 
 .wiki-empty {
     margin: 0;
+}
+
+.wiki-article-list li {
+    margin: 18px 0;
+}
+
+.wiki-article-list p {
+    margin: 4px 0 0;
+    color: #555555;
 }
 
 @media screen and (max-width: 959px) {
@@ -243,6 +267,7 @@ body.wiki-page {
 .wiki-page #partner_baner {
     position: relative;
     z-index: 1;
+    margin-left: calc(330px + 50px);
 }
 
 .wiki-shell {
@@ -372,5 +397,9 @@ body.wiki-page {
 
     .wiki-page footer {
         margin: 0;
+    }
+
+    .wiki-page #partner_baner {
+        margin-left: 50px;
     }
 }

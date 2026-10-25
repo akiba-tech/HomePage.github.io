@@ -1,8 +1,13 @@
 {
   "name": "akiba-tech-homepage",
   "private": true,
+  "engines": {
+    "node": ">=26.12.1 <27"
+  },
   "scripts": {
+    "test": "node --test",
     "build:wiki": "node scripts/build-wiki.mjs",
-    "preview:wiki": "node scripts/build-wiki.mjs --preview"
+    "preview:wiki": "node scripts/build-wiki.mjs --preview",
+    "serve:wiki": "node scripts/build-wiki.mjs --preview && node scripts/serve-wiki.mjs"
   }
 }
