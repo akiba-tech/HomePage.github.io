@@ -32,7 +32,6 @@ product: Universal-PD
 status: limited_stock
 shop_url: https://example.com/shop?a=1&b=2
 ---
-# 概要
 
 電源を供給します。
 電圧を確認してください。
@@ -41,7 +40,13 @@ shop_url: https://example.com/shop?a=1&b=2
 | --- | --- |
 | 出力 | 5V |
 
-![設定表](assets/logic.jpg)
+:::image-text align=center
+![設定表](assets/logic.jpg){width=400}
+
+画像の説明
+
+- 項目
+:::
 
 \x60\x60\x60text
 | literal | code |
@@ -49,32 +54,40 @@ shop_url: https://example.com/shop?a=1&b=2
 \x60\x60\x60
 `);
     await put('Universal-PD/assets/logic.jpg', Buffer.from([255, 216, 255, 217]));
-    await put('AG-BPWR-001/overview.md', '---\nproduct: AG-BPWR-001\ndate: 2026-10-25\n---\n# 概要\n\n- USB給電\n- バッテリー給電');
+    await put('AG-BPWR-001/overview.md', '---\nproduct: AG-BPWR-001\ndate: 2026-10-25\nstatus: upcoming\nrelease_note: 2026年11月後半に発売予定\nshop_url: https://example.com/future\n---\n# 概要\n\n- USB給電\n- バッテリー給電');
     await put('Old/overview.md', '---\nstatus: discontinued\nshop_url: https://example.com/old\n---\n# 旧製品');
     await mkdir(path.join(root, 'product-wiki', 'reviews'), { recursive: true });
     await writeFile(path.join(root, 'product-wiki', 'reviews', 'private.md'), 'private');
     execFileSync(process.execPath, [builder, ...(preview ? ['--preview'] : [])], { cwd: root });
     const site = path.join(root, 'site');
     const html = await readFile(path.join(site, 'wiki', 'universal-pd', 'overview.html'), 'utf8');
-    assert.equal((html.match(/<h1>/g) || []).length, 1);
+    assert.equal((html.match(/<h1\b/g) || []).length, 1);
     assert.match(html, /販売ページはこちら<\/a><span class="product-status product-status-limited">在庫限り<\/span><\/p>/);
     assert.match(html, /電源を供給します。<br>電圧を確認してください。/);
     assert.doesNotMatch(html, /&lt;br&gt;/);
     assert.match(html, /<th>項目<\/th>/);
     assert.match(html, /<pre><code>\| literal \| code \|\n\| --- \| --- \|<\/code><\/pre>/);
     assert.match(html, /aria-current="page">概要/);
-    assert.match(html, /src="\/wiki\/assets\/Universal-PD\/assets\/logic.jpg"/);
+    assert.match(html, /src="\/wiki\/assets\/Universal-PD\/assets\/logic.jpg" alt="設定表" width="400"/);
+    assert.match(html, /class="wiki-image-text wiki-image-text--center wiki-image-text--image-left wiki-image-text--valign-center"/);
+    assert.match(html, /class="wiki-image-text__content"><p>画像の説明<\/p>\s*<ul>\s*<li>項目<\/li>/);
     assert.deepEqual(await readFile(path.join(site, 'wiki', 'assets', 'Universal-PD', 'assets', 'logic.jpg')), Buffer.from([255, 216, 255, 217]));
     const catalog = await readFile(path.join(site, 'index.html'), 'utf8');
     assert.match(catalog, /在庫限り/);
     assert.match(catalog, /販売終了/);
     assert.match(catalog, /AG-BPWR-001/);
+    assert.match(catalog, /product-status-upcoming">2026年11月後半に発売予定<\/span>/);
+    assert.match(catalog, /2026年11月後半に発売予定/);
+    assert.doesNotMatch(catalog, /https:\/\/example.com\/future/);
     assert.match(catalog, /shop\?a=1&amp;b=2/);
     assert.doesNotMatch(catalog, /https:\/\/example.com\/old/);
     const battery = await readFile(path.join(site, 'wiki', 'ag-bpwr-001', 'overview.html'), 'utf8');
     assert.match(battery, /更新日: 2026-10-25/);
+    assert.match(battery, /product-status-upcoming">2026年11月後半に発売予定<\/span>/);
+    assert.match(battery, /2026年11月後半に発売予定/);
+    assert.doesNotMatch(battery, /https:\/\/example.com\/future/);
     assert.match(battery, /<li>USB給電<\/li>/);
-    assert.doesNotMatch(battery, /wiki-product-identity|wiki-explorer-model|class="product-model"/);
+    assert.doesNotMatch(battery, /wiki-explorer-model|class="product-model"/);
     assert.doesNotMatch(battery, /product-status-limited/);
     const discontinued = await readFile(path.join(site, 'wiki', 'old', 'overview.html'), 'utf8');
     assert.match(discontinued, /wiki-product-notice is-discontinued">販売終了/);
@@ -84,23 +97,58 @@ shop_url: https://example.com/shop?a=1&b=2
   });
 }
 
+test('an opening image-text block does not generate an article title', async (t) => {
+  const { root } = await fixture(t);
+  const source = path.join(root, 'content', 'articles', 'Board');
+  await mkdir(source, { recursive: true });
+  await writeFile(path.join(source, 'overview.md'), '---\ntitle: 概要\n---\n\n:::image-text align=center\n![基板](board.jpg){width=400}\n\n説明です。\n:::\n'.replaceAll('\n', '\r\n'));
+  execFileSync(process.execPath, [builder], { cwd: root });
+  const html = await readFile(path.join(root, 'site', 'wiki', 'board', 'overview.html'), 'utf8');
+  assert.match(html, /class="wiki-image-text__content"><p>説明です。<\/p>/);
+  assert.equal((html.match(/<h1\b/g) || []).length, 1);
+});
+
+test('image-text supports placing the image on the right', async (t) => {
+  const { root } = await fixture(t);
+  const source = path.join(root, 'content', 'articles', 'Board');
+  await mkdir(source, { recursive: true });
+  await writeFile(path.join(source, 'overview.md'), ':::image-text align=center position=right valign=top\n![LED](led.jpg){width=400}\n\nLED の説明\n\n:::warning\n注意\n:::\n:::\n');
+  execFileSync(process.execPath, [builder], { cwd: root });
+  const html = await readFile(path.join(root, 'site', 'wiki', 'board', 'overview.html'), 'utf8');
+  assert.match(html, /wiki-image-text--center wiki-image-text--image-right wiki-image-text--valign-top/);
+  assert.match(html, /alt="LED" width="400"/);
+  assert.match(html, /<p>LED の説明<\/p>/);
+  assert.match(html, /<div class="wiki-warning"><p>注意<\/p><\/div>/);
+});
+
+test('warning blocks render emphasized content and keep code examples literal', async (t) => {
+  const { root } = await fixture(t);
+  const source = path.join(root, 'content', 'articles', 'Board');
+  await mkdir(source, { recursive: true });
+  await writeFile(path.join(source, 'overview.md'), ':::warning\n電源を外してください。\n:::\n\n```\n:::warning\n```\n');
+  execFileSync(process.execPath, [builder], { cwd: root });
+  const html = await readFile(path.join(root, 'site', 'wiki', 'board', 'overview.html'), 'utf8');
+  assert.match(html, /<div class="wiki-warning"><p>電源を外してください。<\/p><\/div>/);
+  assert.match(html, /<pre><code>:::warning<\/code><\/pre>/);
+});
+
 test('product name and model are separate, escaped and independent of article titles and URLs', async (t) => {
   const { root } = await fixture(t);
   const source = path.join(root, 'content', 'articles', 'AG-BPWR-001');
   await mkdir(source, { recursive: true });
-  await writeFile(path.join(source, 'overview.md'), '---\ntitle: 概要\nproduct: USB & バッテリー電源基板\nmodel: AG-<BPWR>-001\n---\n# 概要\n\n本文');
+  await writeFile(path.join(source, 'overview.md'), '---\nproduct: USB & バッテリー電源基板\nmodel: AG-<BPWR>-001\n---\n本文');
   execFileSync(process.execPath, [builder], { cwd: root });
   const site = path.join(root, 'site');
   const home = await readFile(path.join(site, 'index.html'), 'utf8');
   assert.match(home, /href="\/wiki\/ag-bpwr-001\/overview.html">USB &amp; バッテリー電源基板<\/a>/);
   assert.match(home, /<p class="product-model">品番: AG-&lt;BPWR&gt;-001<\/p>/);
   const article = await readFile(path.join(site, 'wiki', 'ag-bpwr-001', 'overview.html'), 'utf8');
-  assert.match(article, /<p class="wiki-product-name">USB &amp; バッテリー電源基板<\/p><p class="product-model">品番: AG-&lt;BPWR&gt;-001<\/p>/);
+  assert.match(article, /<h1 class="wiki-product-name">USB &amp; バッテリー電源基板<\/h1><p class="product-model">品番: AG-&lt;BPWR&gt;-001<\/p>/);
   assert.match(article, /<summary>AG-&lt;BPWR&gt;-001<\/summary>/);
   const breadcrumbs = article.match(/<nav class="wiki-breadcrumbs"[^>]*>([\s\S]*?)<\/nav>/)[1];
   assert.match(breadcrumbs, />AG-&lt;BPWR&gt;-001<\/a>/);
   assert.doesNotMatch(breadcrumbs, /USB &amp; バッテリー電源基板/);
-  assert.equal((article.match(/<h1>概要<\/h1>/g) || []).length, 1);
+  assert.doesNotMatch(article, /<h1>概要<\/h1>/);
   assert.doesNotMatch(home + article, /<BPWR>/);
 });
 
@@ -129,9 +177,9 @@ test('discovery files and structured data describe all published articles safely
   const setup = await readFile(path.join(site, 'wiki', '電源基板', 'setup.html'), 'utf8');
   assert.ok(!JSON.parse(setup.match(/<script type="application\/ld\+json" data-wiki-metadata>(.*?)<\/script>/)[1]).dateModified);
   const index = await readFile(path.join(site, 'wiki', 'index.html'), 'utf8');
-  const list = index.match(/<section aria-labelledby="wiki-articles-title">([\s\S]*?)<\/section>/)[1];
-  assert.match(list, /電源 &amp; 基板 \| AG-001 \| 概要/);
-  assert.match(list, /電源 &amp; 基板 \| AG-001 \| 初期設定/);
+  assert.doesNotMatch(index, /製品ドキュメント一覧/);
+  assert.match(index, /href="\/wiki\/電源基板\/overview.html"/);
+  assert.match(index, /href="\/wiki\/電源基板\/setup.html"/);
   const sitemap = await readFile(path.join(site, 'sitemap.xml'), 'utf8');
   assert.match(sitemap, /<lastmod>2026-10-25<\/lastmod>/);
   assert.doesNotMatch(sitemap, /2026-02-30/);
