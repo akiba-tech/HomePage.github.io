@@ -40,10 +40,6 @@ function parseArticle(raw, filePath) {
   const productPath = segments.slice(0, -1);
   if (!productPath.length) throw new Error(`記事は製品フォルダ内に置いてください: ${relative}`);
   const fileName = path.basename(filePath, '.md');
-  const leadingHeading = markdown.match(/^[\r\n]*#\s+(.+)\s*\n?/);
-  const titleFromHeading = leadingHeading?.[1]?.trim();
-  // The page template renders the document title. Do not render a leading H1 twice.
-  if (leadingHeading) markdown = markdown.slice(leadingHeading[0].length);
   const productSlug = productPath.map(slugify).join('/');
   return {
     filePath,
@@ -53,11 +49,12 @@ function parseArticle(raw, filePath) {
     productName: frontMatter.product || productPath[0],
     model: frontMatter.model || '',
     slug: slugify(frontMatter.slug || fileName),
-    title: frontMatter.title || titleFromHeading || fileName,
+    label: fileName === 'overview' ? '概要' : fileName,
     description: frontMatter.description || '',
     date: frontMatter.date || '',
     status: frontMatter.status || 'active',
     shopUrl: frontMatter.shop_url || '',
+    releaseNote: frontMatter.release_note || '',
     markdown,
   };
 }
@@ -108,9 +105,10 @@ function inline(markdown, article) {
 function inlineText(markdown, article) {
   let html = escapeHtml(markdown);
   html = html.replace(/(\\)?&lt;br\s*\/?&gt;/gi, (_, escaped) => escaped ? '&lt;br&gt;' : '<br>');
-  html = html.replace(/!\[([^\]]*)\]\(([^\s)]+)(?:\s+&quot;([^&]*)&quot;)?\)/g, (_, alt, url, title) => {
+  html = html.replace(/!\[([^\]]*)\]\(([^\s)]+)(?:\s+&quot;([^&]*)&quot;)?\)(?:\{width=([1-9]\d{0,3})\})?/g, (_, alt, url, title, width) => {
     const titleAttribute = title ? ` title="${title}"` : '';
-    return `<img src="${escapeHtml(imageUrl(article, url))}" alt="${alt}"${titleAttribute}>`;
+    const widthAttribute = width ? ` width="${width}"` : '';
+    return `<img src="${escapeHtml(imageUrl(article, url))}" alt="${alt}"${titleAttribute}${widthAttribute}>`;
   });
   html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   html = html.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>');
@@ -145,8 +143,45 @@ function renderMarkdown(markdown, article) {
   const tableCells = (line) => line.trim().replace(/^\||\|$/g, '').split('|').map((cell) => cell.trim());
   const isTableDivider = (line) => /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(line);
 
+  const blockEnd = (start) => {
+    let depth = 1;
+    let fenced = false;
+    for (let i = start + 1; i < lines.length; i += 1) {
+      if (lines[i].startsWith('```')) { fenced = !fenced; continue; }
+      if (fenced) continue;
+      if (/^:::(?:warning|image-text)(?:\s|$)/.test(lines[i])) depth += 1;
+      else if (lines[i].trim() === ':::' && --depth === 0) return i;
+    }
+    return -1;
+  };
+
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
+    if (!code && line.trim() === ':::warning') {
+      const end = blockEnd(index);
+      if (end > index) {
+        closeParagraph(); closeList();
+        const content = lines.slice(index + 1, end).join('\n');
+        html.push(`<div class="wiki-warning">${renderMarkdown(content, article)}</div>`);
+        index = end;
+        continue;
+      }
+    }
+    const imageText = line.match(/^:::image-text(?: align=(left|center))?(?: position=(left|right))?(?: valign=(top|center))?\s*$/);
+    if (!code && imageText) {
+      const end = blockEnd(index);
+      const imageLine = lines[index + 1] || '';
+      if (end > index + 1 && /^!\[[^\]]*\]\([^\n]+\)(?:\{width=[1-9]\d{0,3}\})?\s*$/.test(imageLine)) {
+        closeParagraph(); closeList();
+        const alignment = imageText[1] || 'left';
+        const position = imageText[2] || 'left';
+        const vertical = imageText[3] || 'center';
+        const content = lines.slice(index + 2, end).join('\n');
+        html.push(`<div class="wiki-image-text wiki-image-text--${alignment} wiki-image-text--image-${position} wiki-image-text--valign-${vertical}"><div class="wiki-image-text__image">${inline(imageLine.trim(), article)}</div><div class="wiki-image-text__content">${renderMarkdown(content, article)}</div></div>`);
+        index = end;
+        continue;
+      }
+    }
     if (line.startsWith('```')) {
       if (code) closeCode(); else { closeParagraph(); closeList(); code = []; }
       continue;
@@ -201,7 +236,7 @@ function articleUrl(article) {
 }
 
 function articlePageTitle(article) {
-  return [...new Set([article.productName, article.model, article.title].filter(Boolean))].join(' | ');
+  return [...new Set([article.productName, article.model, article.label].filter(Boolean))].join(' | ');
 }
 
 function articleMetadata(article) {
@@ -224,10 +259,6 @@ function articleMetadata(article) {
   };
 }
 
-function renderArticleIndex(articles) {
-  return `<section aria-labelledby="wiki-articles-title"><h2 id="wiki-articles-title">製品ドキュメント一覧</h2><ul class="wiki-article-list">${articles.map((article) => `<li><a href="${articleUrl(article)}">${escapeHtml(articlePageTitle(article))}</a>${article.description ? `<p>${escapeHtml(article.description)}</p>` : ''}</li>`).join('')}</ul></section>`;
-}
-
 async function writeDiscoveryFiles(articles) {
   const staticPages = (await readdir(outputRoot)).filter((name) => name.endsWith('.html')).sort();
   const entries = [
@@ -245,28 +276,33 @@ function productCatalog(articles) {
   for (const article of articles) {
     if (!products.has(article.productSlug)) {
       products.set(article.productSlug, {
+        productSlug: article.productSlug,
         name: article.productName,
         model: '',
         url: articleUrl(article),
         statuses: new Set(),
         shopUrl: '',
+        releaseNote: '',
       });
     }
     const product = products.get(article.productSlug);
     if (article.model) product.model = article.model;
     if (article.status) product.statuses.add(article.status);
     if (article.shopUrl) product.shopUrl = article.shopUrl;
+    if (article.releaseNote) product.releaseNote = article.releaseNote;
   }
   return [...products.values()].map((product) => ({
     ...product,
     status: product.statuses.has('discontinued')
       ? 'discontinued'
-      : product.statuses.has('limited_stock') ? 'limited_stock' : 'active',
+      : product.statuses.has('upcoming') ? 'upcoming'
+        : product.statuses.has('limited_stock') ? 'limited_stock' : 'active',
   }));
 }
 
-function renderProductStatus(status) {
+function renderProductStatus(status, releaseNote = '') {
   if (status === 'discontinued') return '<span class="product-status product-status-discontinued">販売終了</span>';
+  if (status === 'upcoming') return `<span class="product-status product-status-upcoming">${escapeHtml(releaseNote || '近日販売開始')}</span>`;
   if (status === 'limited_stock') return '<span class="product-status product-status-limited">在庫限り</span>';
   return '';
 }
@@ -275,11 +311,11 @@ function renderProductCatalog(products) {
   if (!products.length) return '';
   const cards = products.map((product) => {
     const isDiscontinued = product.status === 'discontinued';
-    const status = renderProductStatus(product.status);
-    const shopUrl = !isDiscontinued && /^https?:\/\//i.test(product.shopUrl) ? product.shopUrl : '';
+    const status = renderProductStatus(product.status, product.releaseNote);
+    const shopUrl = !isDiscontinued && product.status !== 'upcoming' && /^https?:\/\//i.test(product.shopUrl) ? product.shopUrl : '';
     const shopLink = shopUrl ? `<a href="${escapeHtml(shopUrl)}" target="_blank" rel="noopener noreferrer">販売サイト</a>` : '';
-    const model = product.model ? `<p class="product-model">品番: ${escapeHtml(product.model)}</p>` : '';
-    return `<li class="product-card${isDiscontinued ? ' is-discontinued' : ''}"><div class="product-card-heading"><a href="${product.url}">${escapeHtml(product.name)}</a>${status}</div>${model}<div class="product-card-links"><a href="${product.url}">製品情報</a>${shopLink}</div></li>`;
+    const model = `<p class="product-model">${product.model ? `品番: ${escapeHtml(product.model)}` : ''}</p>`;
+    return `<li class="product-card${isDiscontinued ? ' is-discontinued' : ''}">${model}<div class="product-card-heading"><a href="${product.url}">${escapeHtml(product.name)}</a></div><div class="product-card-links"><a href="${product.url}">製品情報</a>${shopLink}${status}</div></li>`;
   }).join('');
   return `<section class="product-catalog" aria-labelledby="product-catalog-title"><h2 id="product-catalog-title">製品情報</h2><ul>${cards}</ul></section>`;
 }
@@ -300,7 +336,7 @@ function explorer(articles, activeUrl = '') {
   const renderNode = (node) => {
     const items = node.articles.map((article) => {
       const url = articleUrl(article);
-      return `<li><a href="${url}"${url === activeUrl ? ' aria-current="page"' : ''}>${escapeHtml(article.title)}</a></li>`;
+      return `<li><a href="${url}"${url === activeUrl ? ' aria-current="page"' : ''}>${escapeHtml(article.label)}</a></li>`;
     }).join('');
     const childFolders = [...node.folders.values()].map(renderNode).join('');
     const contents = `${items ? `<ul>${items}</ul>` : ''}${childFolders}`;
@@ -340,7 +376,7 @@ function page({ title, description, breadcrumbs, navigation, document, url = '/w
   <script src="/js/main.js"></script><script src="/js/load_common_parts.js"></script>
   <script src="/js/wiki-navigation.js"></script>
   <script src="/js/particles/particles.min.js"></script><script src="/js/particles/particles.settings.js"></script>
-  <script>document.addEventListener('click',function(e){const image=e.target.closest('.wiki-document img');if(image) image.classList.toggle('wiki-image-expanded')})</script>
+  <script>document.addEventListener('click',function(e){const expanded=document.querySelector('.wiki-document img.wiki-image-expanded');if(expanded){e.preventDefault();e.stopPropagation();expanded.remove();document.querySelector('.wiki-image-backdrop')?.remove();return}const image=e.target.closest('.wiki-document img');if(image){const header=document.querySelector('header');document.documentElement.style.setProperty('--wiki-preview-header',Math.max(0,header?.getBoundingClientRect().bottom||0)+'px');const backdrop=document.createElement('div');backdrop.className='wiki-image-backdrop';image.parentNode.appendChild(backdrop);const clone=image.cloneNode(true);clone.classList.add('wiki-image-expanded');clone.setAttribute('aria-hidden','true');image.parentNode.appendChild(clone)}},true);document.addEventListener('keydown',function(e){if(e.key==='Escape'){document.querySelector('.wiki-document img.wiki-image-expanded')?.remove();document.querySelector('.wiki-image-backdrop')?.remove()}})</script>
 </body>
 </html>`;
 }
@@ -350,10 +386,10 @@ async function build() {
   const files = await walkMarkdown(sourceRoot);
   if (!files.length) throw new Error(`記事が見つかりません: ${sourceRoot}`);
   const articles = await Promise.all(files.map(async (file) => parseArticle(await readFile(file, 'utf8'), file)));
-  articles.sort((a, b) => a.productName.localeCompare(b.productName, 'ja') || a.title.localeCompare(b.title, 'ja'));
+  articles.sort((a, b) => a.productName.localeCompare(b.productName, 'ja') || a.label.localeCompare(b.label, 'ja'));
   await rm(outputRoot, { recursive: true, force: true });
   await mkdir(outputRoot, { recursive: true });
-  const excluded = new Set(['.git', '.github', '.nvmrc', '.gitignore', '.tools', 'content', 'product-wiki', 'node_modules', 'site', 'wiki', 'scripts', 'test', 'package.json', 'README.md']);
+  const excluded = new Set(['.git', '.github', '.nvmrc', '.gitignore', '.tools', 'content', 'product-wiki', 'node_modules', 'site', 'wiki', 'scripts', 'test', 'package.json', 'README.md', 'ai-notes']);
   for (const entry of await readdir(root, { withFileTypes: true })) {
     if (!excluded.has(entry.name)) {
       await cp(path.join(root, entry.name), path.join(outputRoot, entry.name), { recursive: true });
@@ -362,7 +398,8 @@ async function build() {
   await mkdir(wikiRoot, { recursive: true });
   await copyAssets(sourceRoot);
   const nav = explorer(articles);
-  const catalog = renderProductCatalog(productCatalog(articles));
+  const products = productCatalog(articles);
+  const catalog = renderProductCatalog(products);
   const homePath = path.join(outputRoot, 'index.html');
   try {
     const home = await readFile(homePath, 'utf8');
@@ -375,22 +412,23 @@ async function build() {
   await writeFile(path.join(wikiRoot, 'index.html'), page({
     title: 'Wiki', description: 'アキバ技研の製品公式ドキュメント',
     breadcrumbs: [{ label: 'Wiki', href: '/wiki/' }], navigation: nav,
-    document: `<h1>Wiki の使い方</h1><p>アキバ技研の製品に関する仕様、使い方、FAQを掲載しています。</p>${renderArticleIndex(articles)}<h2>ドキュメントを探す</h2><ol><li>画面左の品番（品番未設定の場合は製品名）をクリックして、製品を選びます。</li><li>表示された記事から、確認したい内容を選びます。</li><li>製品シリーズは、矢印をクリックすると個別製品を展開できます。</li></ol><h2>情報が見つからない場合</h2><p>掲載内容で解決しない場合は、お問い合わせページからご連絡ください。</p>`,
+    document: `<h1>Wiki の使い方</h1><p>アキバ技研の製品に関する仕様、使い方、FAQを掲載しています。</p><h2>ドキュメントを探す</h2><ol><li>画面左の品番（品番未設定の場合は製品名）をクリックして、製品を選びます。</li><li>表示された記事から、確認したい内容を選びます。</li><li>製品シリーズは、矢印をクリックすると個別製品を展開できます。</li></ol><h2>情報が見つからない場合</h2><p>掲載内容で解決しない場合は、お問い合わせページからご連絡ください。</p>`,
   }), 'utf8');
   for (const article of articles) {
     const target = path.join(outputRoot, articleUrl(article).replace(/^\//, ''));
     await mkdir(path.dirname(target), { recursive: true });
-    const articleShopUrl = /^https?:\/\//i.test(article.shopUrl) ? article.shopUrl : '';
-    const productNotice = article.status === 'discontinued'
+    const product = products.find((item) => item.productSlug === article.productSlug);
+    const articleShopUrl = product.status !== 'upcoming' && /^https?:\/\//i.test(article.shopUrl) ? article.shopUrl : '';
+    const productNotice = product.status === 'discontinued'
       ? '<p class="wiki-product-notice is-discontinued">販売終了</p>'
-      : articleShopUrl ? `<p class="wiki-product-notice"><a href="${escapeHtml(articleShopUrl)}" target="_blank" rel="noopener noreferrer">販売ページはこちら</a>${renderProductStatus(article.status)}</p>`
-        : renderProductStatus(article.status);
-    const productIdentity = article.model ? `<div class="wiki-product-identity"><p class="wiki-product-name">${escapeHtml(article.productName)}</p><p class="product-model">品番: ${escapeHtml(article.model)}</p></div>` : '';
-    const body = `${productIdentity}<h1>${escapeHtml(article.title)}</h1>${productNotice}${article.date ? `<p class="wiki-updated">更新日: ${escapeHtml(article.date)}</p>` : ''}${renderMarkdown(article.markdown, article)}`;
+      : articleShopUrl ? `<p class="wiki-product-notice"><a href="${escapeHtml(articleShopUrl)}" target="_blank" rel="noopener noreferrer">販売ページはこちら</a>${renderProductStatus(product.status, product.releaseNote)}</p>`
+        : renderProductStatus(product.status, product.releaseNote);
+    const productIdentity = `<div class="wiki-product-identity"><h1 class="wiki-product-name">${escapeHtml(article.productName)}</h1>${article.model ? `<p class="product-model">品番: ${escapeHtml(article.model)}</p>` : ''}</div>`;
+    const body = `${productIdentity}${productNotice}${article.date ? `<p class="wiki-updated">更新日: ${escapeHtml(article.date)}</p>` : ''}${renderMarkdown(article.markdown, article)}`;
     await writeFile(target, page({
       title: articlePageTitle(article), description: article.description,
       url: articleUrl(article), metadata: articleMetadata(article),
-      breadcrumbs: [{ label: 'Wiki', href: '/wiki/' }, { label: article.model || article.productName, href: '/wiki/' }, { label: article.title, href: articleUrl(article) }],
+      breadcrumbs: [{ label: 'Wiki', href: '/wiki/' }, { label: article.model || article.productName, href: '/wiki/' }, { label: article.label, href: articleUrl(article) }],
       navigation: explorer(articles, articleUrl(article)), document: body,
     }), 'utf8');
   }

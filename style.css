@@ -392,13 +392,17 @@ canvas {
 .product-catalog ul {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 14px;
+    column-gap: 14px;
+    row-gap: 0;
     list-style: none;
     margin: 0;
     padding: 0;
 }
 
 .product-card {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 14px;
     padding: 16px;
     border: 1px solid #33333333;
     border-radius: 10px;
@@ -413,14 +417,34 @@ canvas {
 }
 
 .product-card-heading {
+    align-items: flex-start;
+    align-self: start;
     justify-content: space-between;
     font-size: 1.1rem;
     font-weight: bold;
 }
 
 .product-card-links {
-    margin-top: 12px;
+    margin-top: auto;
+    padding-top: 12px;
+    flex-wrap: wrap;
     font-size: 0.9rem;
+}
+
+@supports (grid-template-rows: subgrid) {
+    .product-card {
+        display: grid;
+        grid-row: span 3;
+        grid-template-rows: subgrid;
+    }
+}
+
+.product-card > .product-model {
+    margin: 0 0 6px;
+}
+
+.product-card-links > .product-status {
+    margin-left: auto;
 }
 
 .product-model {
@@ -441,7 +465,6 @@ canvas {
     border-radius: 4px;
     font-size: 0.75rem;
     font-weight: bold;
-    white-space: nowrap;
 }
 
 .product-status-discontinued {
@@ -457,3 +480,9 @@ canvas {
 .product-card.is-discontinued {
     border-color: #9b2c2c66;
 }
+
+.product-status-upcoming {
+    color: #164376;
+    background-color: #dcecff;
+}
+
