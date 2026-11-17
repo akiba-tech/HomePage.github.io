@@ -376,7 +376,7 @@ function page({ title, description, breadcrumbs, navigation, document, url = '/w
   <script src="/js/main.js"></script><script src="/js/load_common_parts.js"></script>
   <script src="/js/wiki-navigation.js"></script>
   <script src="/js/particles/particles.min.js"></script><script src="/js/particles/particles.settings.js"></script>
-  <script>document.addEventListener('click',function(e){const expanded=document.querySelector('.wiki-document img.wiki-image-expanded');if(expanded){e.preventDefault();e.stopPropagation();expanded.remove();document.querySelector('.wiki-image-backdrop')?.remove();return}const image=e.target.closest('.wiki-document img');if(image){const header=document.querySelector('header');document.documentElement.style.setProperty('--wiki-preview-header',Math.max(0,header?.getBoundingClientRect().bottom||0)+'px');const backdrop=document.createElement('div');backdrop.className='wiki-image-backdrop';image.parentNode.appendChild(backdrop);const clone=image.cloneNode(true);clone.classList.add('wiki-image-expanded');clone.setAttribute('aria-hidden','true');image.parentNode.appendChild(clone)}},true);document.addEventListener('keydown',function(e){if(e.key==='Escape'){document.querySelector('.wiki-document img.wiki-image-expanded')?.remove();document.querySelector('.wiki-image-backdrop')?.remove()}})</script>
+  <script>document.addEventListener('click',function(e){const expanded=document.querySelector('.wiki-document img.wiki-image-expanded');if(expanded){e.preventDefault();e.stopPropagation();expanded.remove();document.querySelector('.wiki-image-backdrop')?.remove();document.querySelector('.wiki-image-lens')?.remove();return}const image=e.target.closest('.wiki-document img');if(image){const header=document.querySelector('header');document.documentElement.style.setProperty('--wiki-preview-header',Math.max(0,header?.getBoundingClientRect().bottom||0)+'px');const backdrop=document.createElement('div');backdrop.className='wiki-image-backdrop';image.parentNode.appendChild(backdrop);const clone=image.cloneNode(true);clone.classList.add('wiki-image-expanded');clone.setAttribute('aria-hidden','true');image.parentNode.appendChild(clone)}},true);document.addEventListener('keydown',function(e){if(e.key==='Escape'){document.querySelector('.wiki-document img.wiki-image-expanded')?.remove();document.querySelector('.wiki-image-backdrop')?.remove();document.querySelector('.wiki-image-lens')?.remove()}});document.addEventListener('mousemove',function(e){const img=document.querySelector('.wiki-document img.wiki-image-expanded');let lens=document.querySelector('.wiki-image-lens');if(!img){lens?.remove();return}const cs=getComputedStyle(img),w=img.offsetWidth,h=img.offsetHeight,nw=img.naturalWidth||w,nh=img.naturalHeight||h,r=Math.min(w/nw,h/nh),cw=nw*r,ch=nh*r,x0=parseFloat(cs.left)-cw/2,y0=parseFloat(cs.top)-ch/2,x=e.clientX-x0,y=e.clientY-y0;if(x<0||y<0||x>cw||y>ch){lens?.remove();return}if(!lens){lens=document.createElement('div');lens.className='wiki-image-lens';img.parentNode.appendChild(lens)}const zoom=2.5,size=Math.round(Math.min(cw,ch)/2);lens.style.width=size+'px';lens.style.height=size+'px';lens.style.left=(e.clientX-size/2)+'px';lens.style.top=(e.clientY-size/2)+'px';lens.style.backgroundImage='url("'+(img.currentSrc||img.src)+'")';lens.style.backgroundSize=(cw*zoom)+'px '+(ch*zoom)+'px';lens.style.backgroundPosition=(size/2-x*zoom)+'px '+(size/2-y*zoom)+'px'});document.addEventListener('mouseout',function(e){if(!e.relatedTarget)document.querySelector('.wiki-image-lens')?.remove()})</script>
 </body>
 </html>`;
 }
@@ -433,11 +433,6 @@ async function build() {
     }), 'utf8');
   }
   await writeDiscoveryFiles(articles);
-  if (process.argv.includes('--preview')) {
-    const previewRoot = path.join(root, 'wiki');
-    await rm(previewRoot, { recursive: true, force: true });
-    await cp(wikiRoot, previewRoot, { recursive: true });
-  }
   console.log(`Built Wiki with ${articles.length} article(s).`);
 }
 
