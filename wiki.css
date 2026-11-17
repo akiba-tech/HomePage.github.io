@@ -133,8 +133,9 @@
 
 @media (max-width: 768px) {
     .wiki-image-text, .wiki-image-text--image-right { grid-template-columns: minmax(0, 1fr); }
-    .wiki-image-text--image-right .wiki-image-text__content { grid-column: 1; grid-row: 1; }
-    .wiki-image-text--image-right .wiki-image-text__image { grid-column: 1; grid-row: 2; }
+    /* スマホでは左右の指定に関係なく、画像をブロックの一番上に表示する */
+    .wiki-image-text .wiki-image-text__image { grid-column: 1; grid-row: 1; align-self: start; }
+    .wiki-image-text .wiki-image-text__content { grid-column: 1; grid-row: 2; }
 }
 
 .wiki-warning {
@@ -186,9 +187,23 @@
     border: 0;
     border-radius: 0;
     background: transparent;
-    transform: translate(-50%, -50%);
+    translate: -50% -50%;
     box-shadow: none;
     cursor: zoom-out;
+}
+
+/* 拡大表示中の画像にホバーすると、カーソル周辺を正方形のルーペで拡大する（一辺は表示画像の短辺の1/2、JSで設定） */
+.wiki-image-lens {
+    position: fixed;
+    z-index: 10000;
+    width: 360px;
+    height: 360px;
+    border: 2px solid #ffffff;
+    border-radius: 0;
+    background-color: #ffffff;
+    background-repeat: no-repeat;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+    pointer-events: none;
 }
 
 body:has(.wiki-image-expanded) header { z-index: 10001; }

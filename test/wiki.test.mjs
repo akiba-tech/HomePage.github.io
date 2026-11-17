@@ -93,7 +93,7 @@ shop_url: https://example.com/shop?a=1&b=2
     assert.match(discontinued, /wiki-product-notice is-discontinued">販売終了/);
     assert.doesNotMatch(discontinued, /販売ページはこちら|https:\/\/example.com\/old/);
     await assert.rejects(access(path.join(site, 'product-wiki')));
-    if (preview) assert.equal(await readFile(path.join(root, 'wiki', 'universal-pd', 'overview.html'), 'utf8'), html);
+    await assert.rejects(access(path.join(root, 'wiki')));
   });
 }
 
